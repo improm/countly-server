@@ -1,36 +1,36 @@
 window.myMetricView = countlyView.extend({
     //need to provide at least empty initialize function
     //to prevent using default template
-    initialize: function() {
+    initialize: function () {
         //we can initialize stuff here
     },
 
-    beforeRender: function() {
+    beforeRender: function () {
         //check if we already have template
         if (this.template)
             //then lets initialize our mode
-            return $.when(myMetric.initialize()).then(function() {});
+            return $.when(myMetric.initialize()).then(function () { });
         else {
             //else let's fetch our template and initialize our mode in paralel
             var self = this;
             return $.when(
                 $.get(
                     countlyGlobal["path"] + "/ourplugin/templates/default.html",
-                    function(src) {
+                    function (src) {
                         //precompiled our template
                         self.template = Handlebars.compile(src);
                     }
                 ),
                 myMetric.initialize()
-            ).then(function() {});
+            ).then(function () { });
         }
     },
 
     //here we need to render our view
-    renderCommon: function() {
+    renderCommon: function () {
         //provide template data
         this.templateData = {
-            "page-title": "OurPlugin",
+            "page-title": "My Metric",
             "logo-class": "",
             data: myMetric.getData()
         };
@@ -40,9 +40,9 @@ window.myMetricView = countlyView.extend({
     },
 
     //here we need to refresh data
-    refresh: function() {
+    refresh: function () {
         var self = this;
-        $.when(myMetric.initialize()).then(function() {
+        $.when(myMetric.initialize()).then(function () {
             //our view is not active
             if (app.activeView != self) {
                 return false;
@@ -58,6 +58,19 @@ window.myMetricView = countlyView.extend({
 app.myMetricView = new myMetricView();
 
 //register route
-app.route("/my-metric", "my-metric", function() {
+app.route("/my-metric", "my-metric", function () {
     this.renderWhenReady(this.myMetricView);
+});
+
+
+$(document).ready(function () {
+    var menu = '<a href="#/my-metric" class="item" ">' +
+        '<div class="logo fa fa-cubes" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>' +
+        '<div class="text" data-localize="my-metric.title">My Metric</div>' +
+        '</a>';
+
+    if ($('.sidebar-menu #management-menu').length)
+        $('.sidebar-menu #management-menu').before(menu);
+    else
+        $('.sidebar-menu').append(menu);
 });
