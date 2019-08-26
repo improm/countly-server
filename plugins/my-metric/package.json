@@ -1,20 +1,24 @@
 {
-  "name": "countly-empty",
-  "title": "Plugin template",
-  "version": "0.0.0",
-  "description": "Empty plugin template for creating new plugins",
+  "name": "my-metric",
+  "title": "My Metric",
+  "version": "0.0.1",
+  "description": "My metric plugin developed as assignment",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/",
-  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
-  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/improm/countly-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/improm/countly-server/issues"
+  },
   "keywords": [
     "countly",
     "analytics",
     "mobile",
     "plugins",
-	"template"
+    "template"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "private": true
 }
