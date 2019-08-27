@@ -24,6 +24,10 @@
         });
     };
 
+    myMetric.getChartData = function() {
+        return _data || {};
+    };
+
     //return data that we have
     myMetric.getData = function() {
         return _data || {};

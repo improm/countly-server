@@ -19,64 +19,15 @@ window.myMetricView = countlyView.extend({
 
     renderCommon: function(isRefresh) {
         var crashData = myMetric.getData();
-        var chartData = myMetric.getChartData(
-            this.curMetric,
-            this.metrics[this.curMetric]
-        );
-        var dashboard = myMetric.getDashboardData();
+        var chartData = myMetric.getChartData();
         this.templateData = {
             "page-title": jQuery.i18n.map["myMetric.title"],
             "no-data": jQuery.i18n.map["common.bar.no-data"]
         };
 
-        var self = this;
-        if (!isRefresh) {
-            countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
-            chartData = myMetric.getChartData(
-                self.curMetric,
-                self.metrics[self.curMetric],
-                self.showOnGraph
-            );
-            $(this.el).html(this.template(this.templateData));
-            self.switchMetric();
-        }
-    },
-
-    //refreshing out chart
-    refresh: function() {
-        var self = this;
-        $.when(myMetric.refresh()).then(function() {
-            //not our view
-            if (app.activeView != self) {
-                return false;
-            }
-
-            //populate and regenerate template data
-            self.renderCommon(true);
-
-            //replace existing elements in view with new data
-            newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            $(self.el)
-                .find(".dashboard-summary")
-                .replaceWith(newPage.find(".dashboard-summary"));
-
-            var data = myMetric.getData();
-
-            //refresh charts
-            countlyCommon.drawGraph(
-                data.chartDPTotal,
-                "#dashboard-graph",
-                "pie"
-            );
-            countlyCommon.drawGraph(
-                data.chartDPNew,
-                "#dashboard-graph2",
-                "pie"
-            );
-
-            //refresh datatables
-            CountlyHelpers.refreshTable(self.dtable, data.chartData);
-        });
+        countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
+        chartData = myMetric.getChartData();
+        $(this.el).html(this.template(this.templateData));
     }
 });
 
