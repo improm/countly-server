@@ -127,6 +127,19 @@ window.myMetricView = countlyView.extend({
 app.myMetricView = new myMetricView();
 
 //register route
-app.route("/my-metric", "my-metric", function() {
+app.route("/my-metric", "my-metric", function () {
     this.renderWhenReady(this.myMetricView);
+});
+
+
+$(document).ready(function () {
+    var menu = '<a href="#/my-metric" class="item" ">' +
+        '<div class="logo fa fa-cubes" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>' +
+        '<div class="text" data-localize="my-metric.title">My Metric</div>' +
+        '</a>';
+
+    if ($('.sidebar-menu #management-menu').length)
+        $('.sidebar-menu #management-menu').before(menu);
+    else
+        $('.sidebar-menu').append(menu);
 });
