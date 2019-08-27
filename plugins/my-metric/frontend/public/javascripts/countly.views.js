@@ -1,55 +1,124 @@
 window.myMetricView = countlyView.extend({
-    //need to provide at least empty initialize function
-    //to prevent using default template
-    initialize: function() {
-        //we can initialize stuff here
+    //initalize out model
+    beforeRender: function() {
+        return $.when(myMetric.initialize()).then(function() {});
     },
 
-    beforeRender: function() {
-        //check if we already have template
-        if (this.template)
-            //then lets initialize our mode
-            return $.when(myMetric.initialize()).then(function() {});
-        else {
-            //else let's fetch our template and initialize our mode in paralel
-            var self = this;
-            return $.when(
-                $.get(
-                    countlyGlobal["path"] + "/ourplugin/templates/default.html",
-                    function(src) {
-                        //precompiled our template
-                        self.template = Handlebars.compile(src);
-                    }
-                ),
-                myMetric.initialize()
-            ).then(function() {});
+    //render our data
+    renderCommon: function(isRefresh) {
+        var data = myMetric.getData();
+
+        //prepare template data
+        this.templateData = {
+            "page-title": jQuery.i18n.map["ourmetric.title"],
+            "logo-class": "",
+            "graph-type-double-pie": true,
+            "pie-titles": {
+                left: jQuery.i18n.map["common.total-users"],
+                right: jQuery.i18n.map["common.new-users"]
+            }
+        };
+
+        //if loading first time and not refershing
+        if (!isRefresh) {
+            //build template with data
+            $(this.el).html(this.template(this.templateData));
+
+            //create datatable with chart data
+            this.dtable = $(".d-table").dataTable(
+                $.extend({}, $.fn.dataTable.defaults, {
+                    //provide data to datatables
+                    aaData: data.chartData,
+
+                    //specify which columns to show
+                    aoColumns: [
+                        {
+                            mData: "ourmetric",
+                            sType: "session-duration",
+                            sTitle: jQuery.i18n.map["ourmetric.title"]
+                        },
+                        {
+                            mData: "t",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(d);
+                            },
+                            sTitle:
+                                jQuery.i18n.map["common.table.total-sessions"]
+                        },
+                        {
+                            mData: "u",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(d);
+                            },
+                            sTitle: jQuery.i18n.map["common.table.total-users"]
+                        },
+                        {
+                            mData: "n",
+                            sType: "formatted-num",
+                            mRender: function(d) {
+                                return countlyCommon.formatNumber(d);
+                            },
+                            sTitle: jQuery.i18n.map["common.table.new-users"]
+                        }
+                    ]
+                })
+            );
+
+            //make table headers sticky
+            $(".d-table").stickyTableHeaders();
+
+            //draw chart with total data
+            countlyCommon.drawGraph(
+                data.chartDPTotal,
+                "#dashboard-graph",
+                "pie"
+            );
+
+            //draw chart with new data
+            countlyCommon.drawGraph(
+                data.chartDPNew,
+                "#dashboard-graph2",
+                "pie"
+            );
         }
     },
 
-    //here we need to render our view
-    renderCommon: function() {
-        //provide template data
-        this.templateData = {
-            "page-title": "OurPlugin",
-            "logo-class": "",
-            data: myMetric.getData()
-        };
-
-        //populate template with data and attach it to page's content element
-        $(this.el).html(this.template(this.templateData));
-    },
-
-    //here we need to refresh data
+    //refreshing out chart
     refresh: function() {
         var self = this;
-        $.when(myMetric.initialize()).then(function() {
-            //our view is not active
+        $.when(myMetric.refresh()).then(function() {
+            //not our view
             if (app.activeView != self) {
                 return false;
             }
 
-            //here basically we want to do the same we did in renderCommon method
-            self.renderCommon();
+            //populate and regenerate template data
+            self.renderCommon(true);
+
+            //replace existing elements in view with new data
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            $(self.el)
+                .find(".dashboard-summary")
+                .replaceWith(newPage.find(".dashboard-summary"));
+
+            var data = myMetric.getData();
+
+            //refresh charts
+            countlyCommon.drawGraph(
+                data.chartDPTotal,
+                "#dashboard-graph",
+                "pie"
+            );
+            countlyCommon.drawGraph(
+                data.chartDPNew,
+                "#dashboard-graph2",
+                "pie"
+            );
+
+            //refresh datatables
+            CountlyHelpers.refreshTable(self.dtable, data.chartData);
         });
     }
 });
