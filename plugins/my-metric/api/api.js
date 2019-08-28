@@ -1,16 +1,23 @@
 var plugin = {},
     plugins = require("../../pluginManager.js"),
-    countlyCommon = require("../lib/countly.common.js"),
-    common = require("./../../utils/common.js");
+    countlyCommon = require('../../../api/lib/countly.common.js'),
+    common = require('../../../api/utils/common.js');
 
-(function(plugin) {
-    plugins.register("/i/my-metric", function(obj) {
+(function (plugin) {
+
+    plugins.register('/i', function () {
+
+    })
+
+
+    plugins.register("/i/my-metric", function (obj) {
+
         //get request parameters
         var paramInstance = obj.params,
             validateUserForWriteAPI = obj.validateUserForWriteAPI;
 
         // Validate if user has provided correct params in request
-        validateUserForWriteAPI(function(params) {
+        validateUserForWriteAPI(function (params) {
             const queryStringValidations = {
                 app_key: {
                     required: true,
@@ -51,7 +58,7 @@ var plugin = {},
              **/
                 common.db
                     .collection("myMetric")
-                    .insert(dataToInsert, function(err) {
+                    .insert(dataToInsert, function (err) {
                         if (err) {
                             common.returnMessage(params, 500, err);
                             return false;
@@ -71,9 +78,9 @@ var plugin = {},
         return true;
     });
 
-    plugins.register("/o/my-metric", function(obj) {
+    plugins.register("/o/my-metric", function (obj) {
         const params = obj.params;
-        obj.validateUserForDataReadAPI(params, function() {
+        obj.validateUserForDataReadAPI(params, function () {
             var periodObj = countlyCommon.getPeriodObj(params);
 
             const isValidRequest = !!(periodObj.start && periodObj.end);
@@ -82,7 +89,7 @@ var plugin = {},
                 common.db
                     .collection("myMetric")
                     .find({ ts: countlyCommon.getTimestampRangeQuery(params) })
-                    .toArray(function(err, items) {
+                    .toArray(function (err, items) {
                         if (err) {
                             common.returnMessage(params, 400, err);
                             return false;
