@@ -1,9 +1,13 @@
-(function(myMetric, $) {
+(function (myMetric, $) {
     //we will store our data here
-    var _data = {};
+    var _data = {},
+        mapData = {
+            chartDP: [],
+            chartData: []
+        };
 
     //Initializing model
-    myMetric.initialize = function() {
+    myMetric.initialize = function () {
         //returning promise
         return $.ajax({
             type: "GET",
@@ -16,20 +20,52 @@
                 //specifying method param
                 method: "myMetric"
             },
-            success: function(json) {
+            success: function (json) {
                 //got our data, let's store it
-                console.log(json);
+                myMetric.processAndSaveData(json.data);
                 _data = json;
             }
         });
     };
 
-    myMetric.getChartData = function() {
-        return _data || {};
+
+    myMetric.processAndSaveData = function (data) {
+        var _map = {};
+        var secondsInADay = 24 * 60 * 60 * 1000;
+        (data || []).forEach((dataPoint) => {
+            var timeStamp = Math.floor(dataPoint.ts / secondsInADay) * secondsInADay;
+            console.log(timeStamp)
+            if (_map[timeStamp]) {
+                _map[timeStamp] = _map[timeStamp] + Number(dataPoint.my_metric_count)
+            } else {
+                _map[timeStamp] = Number(dataPoint.my_metric_count)
+            }
+        })
+
+        var sortedKeys = Object.keys(_map).sort((item1, item2) => {
+            return item1 > item2
+        })
+
+        sortedKeys.forEach((timeStamp) => {
+            mapData.chartData.push({
+                date: moment(Number(timeStamp)).format('DD MMM'),
+                my_metric_count: _map[timeStamp]
+            })
+        })
+
+        mapData.chartDP.push({
+            label: "Total occurences",
+            color: "#DDDDDD",
+            data: [[]]
+        })
+    }
+
+    myMetric.getChartData = function () {
+        return mapData;
     };
 
     //return data that we have
-    myMetric.getData = function() {
+    myMetric.getData = function () {
         return _data || {};
     };
 })((window.myMetric = window.myMetric || {}), jQuery);
