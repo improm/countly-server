@@ -5,10 +5,6 @@ var plugin = {},
 
 (function (plugin) {
 
-    plugins.register('/i', function () {
-
-    })
-
 
     plugins.register("/i/my-metric", function (obj) {
 
@@ -33,7 +29,7 @@ var plugin = {},
                 },
                 my_metric_count: {
                     required: true,
-                    type: "Number"
+                    type: "String"
                 }
             };
             const isValidRequest = common.validateArgs(
@@ -42,7 +38,7 @@ var plugin = {},
             );
 
             if (isValidRequest) {
-                const { my_metric, my_metric_count } = params;
+                const { my_metric, my_metric_count } = params.qstring;
 
                 const dataToInsert = {
                     my_metric,
