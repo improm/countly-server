@@ -1,4 +1,4 @@
-(function (myMetric, $) {
+(function(myMetric, $) {
     //we will store our data here
     var _data = {},
         topMetricValue,
@@ -9,7 +9,7 @@
         };
 
     //Initializing model
-    myMetric.initialize = function () {
+    myMetric.initialize = function() {
         //returning promise
         return $.ajax({
             type: "GET",
@@ -22,85 +22,108 @@
                 //specifying method param
                 method: "myMetric"
             },
-            success: function (json) {
+            success: function(json) {
                 //got our data, let's store it
                 _data = json.data;
                 myMetric.processAndSaveData(json.data);
-
             }
         });
     };
 
-
-    myMetric.processAndSaveData = function (data) {
+    myMetric.processAndSaveData = function(data) {
+        /**
+         * will be used to find all events accepted in same day
+         */
         var _map = {};
         var secondsInADay = 24 * 60 * 60 * 1000;
+
+        /**
+         * to find out the metric received maximum number of times and its count
+         */
         var _individualMetricMap = {};
+
+        /**
+         * temporary values to get the metric received max no of times
+         */
         var _topMetricValue = 0;
         var _topMetricName;
 
+        (data || []).forEach(function(dataPoint) {
+            /**
+             * floor timestamps in a day to 12am of that day. So that they can be merged
+             */
+            var timeStamp =
+                Math.floor(dataPoint.ts / secondsInADay) * secondsInADay;
 
-        (data || []).forEach((dataPoint) => {
-            var timeStamp = Math.floor(dataPoint.ts / secondsInADay) * secondsInADay;
+            // Build a hashmap of unique timestamps
             if (_map[timeStamp]) {
-                _map[timeStamp] = _map[timeStamp] + Number(dataPoint.my_metric_count)
+                _map[timeStamp] =
+                    _map[timeStamp] + Number(dataPoint.my_metric_count);
             } else {
-                _map[timeStamp] = Number(dataPoint.my_metric_count)
+                _map[timeStamp] = Number(dataPoint.my_metric_count);
             }
 
-            if (Object.hasOwnProperty.call(_individualMetricMap, [dataPoint.my_metric])) {
-                _individualMetricMap[dataPoint.my_metric] = _individualMetricMap[dataPoint.my_metric] + 1
+            // build a hashmap of all unique events and counts
+            if (
+                Object.hasOwnProperty.call(_individualMetricMap, [
+                    dataPoint.my_metric
+                ])
+            ) {
+                _individualMetricMap[dataPoint.my_metric] =
+                    _individualMetricMap[dataPoint.my_metric] +
+                    dataPoint.my_metric_count;
             } else {
-                _individualMetricMap[dataPoint.my_metric] = 0
+                _individualMetricMap[dataPoint.my_metric] = 0;
             }
-        })
+        });
 
-        var sortedKeys = Object.keys(_map).sort((item1, item2) => {
-            return item1 > item2
-        })
-
-        sortedKeys.forEach((timeStamp) => {
+        /**
+         * Create graph to be plotted in an increasing timestamp value
+         */
+        var sortedKeys = Object.keys(_map).sort(function(item1, item2) {
+            return item1 > item2;
+        });
+        sortedKeys.forEach(function(timeStamp) {
             mapData.chartData.push({
-                date: moment(Number(timeStamp)).format('DD MMM'),
+                date: moment(Number(timeStamp)).format("DD MMM"),
                 my_metric_count: _map[timeStamp]
-            })
-        })
+            });
+        });
 
         mapData.chartDP.push({
             label: "Total occurences",
             color: "#DDDDDD",
             data: [[]]
-        })
+        });
 
-        console.log(_individualMetricMap)
-
-        var sortedKeys = Object.keys(_individualMetricMap).forEach((metricName) => {
+        // Finding out the event that occured maximum number of times
+        Object.keys(_individualMetricMap).forEach(function(metricName) {
             if (_individualMetricMap[metricName] > _topMetricValue) {
                 _topMetricValue = _individualMetricMap[metricName];
                 _topMetricName = metricName;
             }
-        })
+        });
 
         topMetricValue = _topMetricValue;
         topMetricName = _topMetricName;
 
-        console.log("top values", topMetricValue, topMetricName)
-    }
+        console.log("top values", topMetricValue, topMetricName);
+    };
 
-    myMetric.getTopMetricName = function () {
+    myMetric.getTopMetricName = function() {
         return topMetricName;
     };
 
-    myMetric.getTopMetricValue = function () {
+    myMetric.getTopMetricValue = function() {
         return topMetricName;
     };
 
-    myMetric.getChartData = function () {
+    myMetric.getChartData = function() {
         return mapData;
     };
 
     //return data that we have
-    myMetric.getTableData = function () {
+    myMetric.getTableData = function() {
         return mapData.chartData || [];
     };
 })((window.myMetric = window.myMetric || {}), jQuery);
