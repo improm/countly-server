@@ -22,8 +22,9 @@
             },
             success: function (json) {
                 //got our data, let's store it
+                _data = json.data;
                 myMetric.processAndSaveData(json.data);
-                _data = json;
+
             }
         });
     };
@@ -65,7 +66,7 @@
     };
 
     //return data that we have
-    myMetric.getData = function () {
-        return _data || {};
+    myMetric.getTableData = function () {
+        return mapData.chartData || [];
     };
 })((window.myMetric = window.myMetric || {}), jQuery);

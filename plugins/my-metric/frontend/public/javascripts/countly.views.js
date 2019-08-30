@@ -1,24 +1,24 @@
 window.myMetricView = countlyView.extend({
     //initalize out model
-    beforeRender: function() {
+    beforeRender: function () {
         if (this.template) {
-            return $.when(myMetric.initialize()).then(function() {});
+            return $.when(myMetric.initialize()).then(function () { });
         } else {
             var self = this;
             return $.when(
                 $.get(
                     countlyGlobal.path + "/my-metric/templates/my-metric.html",
-                    function(src) {
+                    function (src) {
                         self.template = Handlebars.compile(src);
                     }
                 ),
                 myMetric.initialize()
-            ).then(function() {});
+            ).then(function () { });
         }
     },
 
-    renderCommon: function(isRefresh) {
-        var crashData = myMetric.getData();
+    renderCommon: function (isRefresh) {
+        var tableData = myMetric.getTableData();
         var chartData = myMetric.getChartData();
         this.templateData = {
             "page-title": jQuery.i18n.map["myMetric.title"],
@@ -28,6 +28,30 @@ window.myMetricView = countlyView.extend({
         countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
         chartData = myMetric.getChartData();
         $(this.el).html(this.template(this.templateData));
+
+        //create datatable with chart data
+        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            //provide data to datatables
+            "aaData": tableData,
+
+            //specify which columns to show
+            "aoColumns": [
+                {
+                    "mData": "date",
+                    "mRender": function (d) {
+                        return d;
+                    }, "sTitle": "DATE"
+                },
+                {
+                    "mData": "my_metric_count",
+                    "mRender": function (d) { return d },
+                    "sTitle": "COUNT"
+                }
+            ]
+        }));
+
+        //make table headers sticky
+        $(".d-table").stickyTableHeaders();
     }
 });
 
@@ -35,11 +59,11 @@ window.myMetricView = countlyView.extend({
 app.myMetricView = new myMetricView();
 
 //register route
-app.route("/my-metric", "my-metric", function() {
+app.route("/my-metric", "my-metric", function () {
     this.renderWhenReady(this.myMetricView);
 });
 
-$(document).ready(function() {
+$(document).ready(function () {
     var menu =
         '<a href="#/my-metric" class="item" ">' +
         '<div class="logo fa fa-cubes" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>' +
