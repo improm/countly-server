@@ -71,7 +71,7 @@
             ) {
                 _individualMetricMap[dataPoint.my_metric] =
                     _individualMetricMap[dataPoint.my_metric] +
-                    dataPoint.my_metric_count;
+                    Number(dataPoint.my_metric_count);
             } else {
                 _individualMetricMap[dataPoint.my_metric] = 0;
             }
