@@ -9,7 +9,7 @@ window.myMetricView = countlyView.extend({
         var tableData = myMetric.getTableData();
         var chartData = myMetric.getChartData();
         this.templateData = {
-            "page-title": "My Metric",
+            "page-title": jQuery.i18n.map["my-metric.title"],
             "no-data": jQuery.i18n.map["common.bar.no-data"],
             topMetric: myMetric.getTopMetricName()
         };

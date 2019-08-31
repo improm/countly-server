@@ -109,7 +109,7 @@
         });
 
         mapData.chartDP.push({
-            label: "Total occurences",
+            label: jQuery.i18n.map["ourmetric.total_occurences"],
             color: "#DDDDDD",
             data: [[]]
         });
