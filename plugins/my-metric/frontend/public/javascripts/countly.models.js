@@ -28,7 +28,7 @@
         };
 
     }
-        myMetric.fetchData = function () {
+    myMetric.fetchData = function () {
         _period = countlyCommon.getPeriodForAjax();
         //returning promise
         return $.ajax({
@@ -111,7 +111,7 @@
                 my_metric_count: _map[timeStamp]
             });
 
-            mapData.chartDP[0].data.push([0, _map[timeStamp]])
+            mapData.chartDP.length ? mapData.chartDP[0].data.push([0, _map[timeStamp]]) : '';
         });
 
         // Finding out the event that occured maximum number of times
