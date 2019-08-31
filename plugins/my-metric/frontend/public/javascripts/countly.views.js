@@ -5,7 +5,7 @@ window.myMetricView = countlyView.extend({
         myMetric.initialize()
     },
 
-    renderCommon: function (isRefresh) {
+    renderCommon: function () {
         var tableData = myMetric.getTableData();
         var chartData = myMetric.getChartData();
         this.templateData = {
@@ -14,35 +14,42 @@ window.myMetricView = countlyView.extend({
             topMetric: myMetric.getTopMetricName()
         };
 
-        if (!isRefresh) {
-            countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
-            $(this.el).html(this.template(this.templateData));
 
-            //create datatable with chart data
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                //provide data to datatables
-                "aaData": tableData,
+        countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
+        $(this.el).html(this.template(this.templateData));
 
-                //specify which columns to show
-                "aoColumns": [
-                    {
-                        "mData": "date",
-                        "mRender": function (d) {
-                            return d;
-                        }, "sTitle": "DATE"
-                    },
-                    {
-                        "mData": "my_metric_count",
-                        "mRender": function (d) { return d },
-                        "sTitle": "COUNT"
-                    }
-                ]
-            }));
+        //create datatable with chart data
+        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            //provide data to datatables
+            "aaData": tableData,
 
-            //make table headers sticky
-            $(".d-table").stickyTableHeaders();
-        }
+            //specify which columns to show
+            "aoColumns": [
+                {
+                    "mData": "date",
+                    "mRender": function (d) {
+                        return d;
+                    }, "sTitle": "DATE"
+                },
+                {
+                    "mData": "my_metric_count",
+                    "mRender": function (d) { return d },
+                    "sTitle": "COUNT"
+                }
+            ]
+        }));
+
+        //make table headers sticky
+        $(".d-table").stickyTableHeaders();
     },
+    refresh: function (force) {
+        var self = this;
+        myMetric.reset();
+        myMetric.initialize().then(function () {
+            CountlyHelpers.refreshTable(self.dtable, myMetric.getTableData());
+        });
+    }
+
 });
 
 //create view

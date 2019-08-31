@@ -1,4 +1,4 @@
-(function(myMetric, $) {
+(function (myMetric, $) {
     //we will store our data here
     var _data = {},
         topMetricValue,
@@ -9,7 +9,23 @@
         };
 
     //Initializing model
-    myMetric.initialize = function() {
+    myMetric.initialize = function () {
+        return this.fetchData();
+    };
+
+    myMetric.reset = function () {
+        _data = {};
+        topMetricValue = null;
+        topMetricName = null;
+        mapData = {
+            chartDP: [],
+            chartData: []
+        };
+
+    }
+
+    myMetric.fetchData = function () {
+        _period = countlyCommon.getPeriodForAjax();
         //returning promise
         return $.ajax({
             type: "GET",
@@ -20,17 +36,18 @@
                 //providing current app's id
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 //specifying method param
-                method: "myMetric"
+                method: "myMetric",
+                "period": _period
             },
-            success: function(json) {
+            success: function (json) {
                 //got our data, let's store it
                 _data = json.data;
                 myMetric.processAndSaveData(json.data);
             }
         });
-    };
+    }
 
-    myMetric.processAndSaveData = function(data) {
+    myMetric.processAndSaveData = function (data) {
         /**
          * will be used to find all events accepted in same day
          */
@@ -48,7 +65,8 @@
         var _topMetricValue = 0;
         var _topMetricName;
 
-        (data || []).forEach(function(dataPoint) {
+        (data || []).forEach(function (dataPoint) {
+
             /**
              * floor timestamps in a day to 12am of that day. So that they can be merged
              */
@@ -80,10 +98,10 @@
         /**
          * Create graph to be plotted in an increasing timestamp value
          */
-        var sortedKeys = Object.keys(_map).sort(function(item1, item2) {
+        var sortedKeys = Object.keys(_map).sort(function (item1, item2) {
             return item1 > item2;
         });
-        sortedKeys.forEach(function(timeStamp) {
+        sortedKeys.forEach(function (timeStamp) {
             mapData.chartData.push({
                 date: moment(Number(timeStamp)).format("DD MMM"),
                 my_metric_count: _map[timeStamp]
@@ -97,7 +115,7 @@
         });
 
         // Finding out the event that occured maximum number of times
-        Object.keys(_individualMetricMap).forEach(function(metricName) {
+        Object.keys(_individualMetricMap).forEach(function (metricName) {
             if (_individualMetricMap[metricName] > _topMetricValue) {
                 _topMetricValue = _individualMetricMap[metricName];
                 _topMetricName = metricName;
@@ -110,20 +128,20 @@
         console.log("top values", topMetricValue, topMetricName);
     };
 
-    myMetric.getTopMetricName = function() {
+    myMetric.getTopMetricName = function () {
         return topMetricName;
     };
 
-    myMetric.getTopMetricValue = function() {
+    myMetric.getTopMetricValue = function () {
         return topMetricName;
     };
 
-    myMetric.getChartData = function() {
+    myMetric.getChartData = function () {
         return mapData;
     };
 
     //return data that we have
-    myMetric.getTableData = function() {
+    myMetric.getTableData = function () {
         return mapData.chartData || [];
     };
 })((window.myMetric = window.myMetric || {}), jQuery);
