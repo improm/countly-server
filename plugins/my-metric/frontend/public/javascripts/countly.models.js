@@ -4,7 +4,12 @@
         topMetricValue,
         topMetricName,
         mapData = {
-            chartDP: [],
+            chartDP: [{
+                mode: 'ghost',
+                label: 'Total occurances',
+                color: "#DDDDDD",
+                data: []
+            }],
             chartData: []
         };
 
@@ -23,8 +28,7 @@
         };
 
     }
-
-    myMetric.fetchData = function () {
+        myMetric.fetchData = function () {
         _period = countlyCommon.getPeriodForAjax();
         //returning promise
         return $.ajax({
@@ -106,12 +110,8 @@
                 date: moment(Number(timeStamp)).format("DD MMM"),
                 my_metric_count: _map[timeStamp]
             });
-        });
 
-        mapData.chartDP.push({
-            label: jQuery.i18n.map["ourmetric.total_occurences"],
-            color: "#DDDDDD",
-            data: [[]]
+            mapData.chartDP[0].data.push([0, _map[timeStamp]])
         });
 
         // Finding out the event that occured maximum number of times
